@@ -8,7 +8,7 @@ Q4. 0 9 15 * *
 
 - prefect storage create
 - prefect deployment create homework.py
-- 
+
 Q5. I see four 4 scheduled runs
 
 ![pic1](images/scheduled_runs.png "future runs")
