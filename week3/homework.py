@@ -1,5 +1,6 @@
 import pickle
 import pandas as pd
+from datetime import timedelta
 
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.linear_model import LinearRegression
@@ -7,9 +8,9 @@ from sklearn.metrics import mean_squared_error
 
 from prefect import get_run_logger
 from prefect import flow, task
-
-# import logging
-# logger = logging.getLogger('test')
+from prefect.deployments import DeploymentSpec
+from prefect.orion.schemas.schedules import CronSchedule
+from prefect.flow_runners import SubprocessFlowRunner
 
 
 @task
@@ -107,5 +108,11 @@ def main(date=None):
         pickle.dump(dv, f_out)
 
 
-main(date="2021-08-15")
-
+# main(date="2021-08-15")
+DeploymentSpec(
+    flow=main,
+    name='model_training',
+    schedule=CronSchedule(cron='0 9 15 * *'),
+    flow_runner=SubprocessFlowRunner(),
+    tags=['mlops-zoomcamp']
+)
