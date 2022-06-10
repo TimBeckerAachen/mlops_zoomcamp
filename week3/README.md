@@ -5,5 +5,7 @@ Q4. 0 9 15 * *
 - prefect storage create
 - prefect deployment create homework.py
 Q5. I see four 4 scheduled runs
-![pic](images/scheduled_runs.png "future runs")
-Q6. 
+![pic1](images/scheduled_runs.png "future runs")
+Q6. prefect work-queue ls
+![pic2](images/work_queues.png "work queue")
+- prefect work-queue preview --hours 500 fee3b8ec-3a90-4599-9ccb-56702aedec43
