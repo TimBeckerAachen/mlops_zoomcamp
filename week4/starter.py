@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+import sys
 import pickle
 import pandas as pd
 
@@ -26,6 +27,7 @@ def write_results(df, output_file):
     dicts = df[categorical].to_dict(orient='records')
     X_val = dv.transform(dicts)
     y_pred = lr.predict(X_val)
+    print(f'mean predicted duration {y_pred.mean()}')
 
     df_result = pd.DataFrame()
     df_result['ride_id'] = df['ride_id']
@@ -37,15 +39,20 @@ def write_results(df, output_file):
         compression=None,
         index=False
     )
+    print(f'wrote predictions to {output_file}')
 
 
-year = 2021
-month = 2
-input_file = f'https://nyc-tlc.s3.amazonaws.com/trip+data/fhv_tripdata_{year}-{month:02d}.parquet'
-output_file = f'result_fhv_tripdata_{year}-{month:02d}.parquet'
+def run(year: int = 2021, month: int = 2):
+    input_file = f'https://nyc-tlc.s3.amazonaws.com/trip+data/fhv_tripdata_{year}-{month:02d}.parquet'
+    output_file = f'result_fhv_tripdata_{year}-{month:02d}.parquet'
+    data = read_data(input_file)
+    write_results(data, output_file)
+
+
 categorical = ['PUlocationID', 'DOlocationID']
 
 
 if __name__ == '__main__':
-    data = read_data(input_file)
-    write_results(data, output_file)
+    year = int(sys.argv[1])
+    month = int(sys.argv[2])
+    run(year, month)
