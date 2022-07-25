@@ -1,14 +1,35 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+import os
 import sys
 import pickle
 import pandas as pd
 
 
 def read_data(filename: str) -> pd.DataFrame:
-    df = pd.read_parquet(filename)
+    options = {
+        'client_kwargs': {
+            'endpoint_url': os.getenv('S3_ENDPOINT_URL', None)
+        }
+    }
+    if options['client_kwargs']['endpoint_url'] is not None:
+        df = pd.read_parquet(filename, storage_options=options)
+    else:
+        df = pd.read_parquet(filename)
     return df
+
+
+def get_input_path(year, month):
+    default_input_pattern = 'https://raw.githubusercontent.com/alexeygrigorev/datasets/master/nyc-tlc/fhv/fhv_tripdata_{year:04d}-{month:02d}.parquet'
+    input_pattern = os.getenv('INPUT_FILE_PATTERN', default_input_pattern)
+    return input_pattern.format(year=year, month=month)
+
+
+def get_output_path(year, month):
+    default_output_pattern = 's3://nyc-duration-prediction-alexey/taxi_type=fhv/year={year:04d}/month={month:02d}/predictions.parquet'
+    output_pattern = os.getenv('OUTPUT_FILE_PATTERN', default_output_pattern)
+    return output_pattern.format(year=year, month=month)
 
 
 def prepare_data(df: pd.DataFrame, categorical: list):
@@ -22,8 +43,11 @@ def prepare_data(df: pd.DataFrame, categorical: list):
 
 
 def main(year: int, month: int):
-    input_file = f'https://raw.githubusercontent.com/alexeygrigorev/datasets/master/nyc-tlc/fhv/fhv_tripdata_{year:04d}-{month:02d}.parquet'
-    output_file = f'taxi_type=fhv_year={year:04d}_month={month:02d}.parquet'
+    # input_file = f'https://raw.githubusercontent.com/alexeygrigorev/datasets/master/nyc-tlc/fhv/fhv_tripdata_{year:04d}-{month:02d}.parquet'
+    # output_file = f'taxi_type=fhv_year={year:04d}_month={month:02d}.parquet'
+
+    input_file = get_input_path(year, month)
+    output_file = get_output_path(year, month)
 
     with open('model.bin', 'rb') as f_in:
         dv, lr = pickle.load(f_in)
@@ -53,4 +77,3 @@ if __name__ == '__main__':
     month = int(sys.argv[2])
 
     main(year, month)
-
