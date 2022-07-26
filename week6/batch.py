@@ -13,11 +13,28 @@ def read_data(filename: str) -> pd.DataFrame:
             'endpoint_url': os.getenv('S3_ENDPOINT_URL', None)
         }
     }
+    print(filename, options)
     if options['client_kwargs']['endpoint_url'] is not None:
         df = pd.read_parquet(filename, storage_options=options)
     else:
         df = pd.read_parquet(filename)
     return df
+
+
+def save_data(df: pd.DataFrame, filename: str):
+    options = {
+        'client_kwargs': {
+            'endpoint_url': os.getenv('S3_ENDPOINT_URL', None)
+        }
+    }
+
+    df.to_parquet(
+        filename,
+        engine='pyarrow',
+        compression=None,
+        index=False,
+        storage_options=options
+    )
 
 
 def get_input_path(year, month):
@@ -69,7 +86,7 @@ def main(year: int, month: int):
     df_result['ride_id'] = df['ride_id']
     df_result['predicted_duration'] = y_pred
 
-    df_result.to_parquet(output_file, engine='pyarrow', index=False)
+    save_data(df_result, output_file)
 
 
 if __name__ == '__main__':
